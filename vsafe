@@ -145,24 +145,8 @@ generate_keypair() {
 
 ###############################################
 
-test_roundtrip_random_data() (
-    num_bytes=$1
-
-    temp=$(mktemp --directory /dev/shm/simple-asymmetric-crypto_XXXXX)
-    trap "rm -rf '$temp'" EXIT
-    cd "$temp"
-
-    generate_keypair "test-keypair"
-
-    head -c "$num_bytes" /dev/urandom | tr -dc '[:print:]' > "secret_input.txt"
-
-    encrypted=$(encrypt "test-keypair.pub" "secret_input.txt")
-
-    diff "secret_input.txt" <(decrypt_file "test-keypair" "$encrypted")
-)
-
-test_real() (
-    echo "Real test: Alice sends Bob a file"
+test() (
+    echo "Alice sends Bob a file"
     self=$(readlink -f "$0")
 
     workbench=$(mktemp --directory /dev/shm/vsafe-test_XXXXX)
@@ -216,22 +200,6 @@ test_real() (
         fi
     }
 )
-
-test() {
-#    n=10
-#    bytes=32
-#    echo "$n roundtrips with $(numfmt --to=iec-i --suffix=B "$bytes") random data each"
-#    for (( i=1; i <= $n; i++ )); do
-#        echo -n " $i"
-#        test_roundtrip_random_data "$bytes"
-#        if (( i % 10 == 0 )); then
-#            echo
-#        fi
-#    done
-
-    test_real
-
-}
 
 ###############################################
 
