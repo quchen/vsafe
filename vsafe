@@ -19,8 +19,6 @@ if ! which ssh-keygen > /dev/null; then
     exit 1
 fi
 
-###############################################
-
 generate_random_symmetric_key_base64() {
     key_length_bytes=32
     openssl rand "$key_length_bytes" | base64
@@ -79,8 +77,6 @@ privkey_file=\${1:?First parameter expected: private key file}
 EOF
 }
 
-###############################################
-
 generate_keypair() {
     filename=$1
 
@@ -90,8 +86,6 @@ generate_keypair() {
     # -f …: Generate …{,.pub}
     ssh-keygen -t rsa -f "$filename" -q -N ""
 }
-
-###############################################
 
 test() (
     echo "Alice sends Bob a file"
@@ -148,8 +142,6 @@ test() (
         fi
     }
 )
-
-###############################################
 
 emphasis() {
     echo -e "\e[3m$*\e[m"
