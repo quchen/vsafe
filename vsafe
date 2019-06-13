@@ -49,38 +49,26 @@ encrypt() {
     encrypted_symmetric_key_base64=$(encrypt_symmetric_key_base64 "$symmetric_key" "$pubkey_file")
 
     cat <<EOF
-Dead simple asymmetric encryption file
-======================================
+#!/usr/bin/env bash
 
-RSA-Encrypted AES-256-CBC key
------------------------------
+# Dead simple encrypted file
+# ==========================
+#
+# This file contains an encrypted file. You can decode it by simply saving the
+# whole text you’re reading right now to a file and running it:
+#
+#     <this> private.key > decrypted-file
+#
+# Alternatively, you may review the steps taken below, and decode it manually.
+
+set -euo pipefail
 
 symmetric_key=$encrypted_symmetric_key_base64
-
-AES-encrypted data payload
---------------------------
-
 payload=$encrypted_payload_base64
+privkey_file=${1:?First parameter expected: private key file}
 
-Decrypt via script
-------------------
-
-If you have been provided with a copy of the vsafe script, you can decode this
-message using your private key simply by
-
-    vsafe decrypt "\$privke_file" (this file) > decrypted-file
-
-Decrypt manually
-----------------
-
-You can decrypt the above using only openssl manually, so you do not have to
-trust vsafe’s own code. First, decrypt the symmetric key using your private key,
-
-    openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode) > symmetric_key
-
-Now you can decrypt the payload,
-
-   openssl aes-256-cbc -d -in <(echo "\$payload" | base64 --decode) -pass stdin < symmetric_key > decrypted-file
+openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode) | \\
+openssl aes-256-cbc -d -in <(echo "\$payload" | base64 --decode) -pass stdin > decrypted-file
 EOF
 }
 
