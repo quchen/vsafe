@@ -81,58 +81,6 @@ EOF
 
 ###############################################
 
-decrypt_symmetric_key() {
-    privkey_file=$1
-    symmetric_key_base64=$2
-
-    openssl rsautl -decrypt -oaep -inkey "$privkey_file" -in <(echo "$symmetric_key_base64" | base64 --decode)
-}
-
-decrypt_payload() {
-    payload_base64=$1
-
-    openssl aes-256-cbc -d -in <(echo "$payload_base64" | base64 --decode) -pass stdin
-}
-
-decrypt() {
-    privkey_file=$1
-    symmetric_key_base64=$2
-    payload_base64=$3
-    if [[ $# -gt 3 ]]; then
-        shift 3
-        echo_error "Too many arguments! Leftover parameters: $*"
-        exit 3
-    fi
-
-    decrypt_symmetric_key "$privkey_file" "$symmetric_key_base64" | decrypt_payload "$payload_base64"
-}
-
-decrypt_file() {
-    privkey_file=$1
-    encrypted_input_file=$2
-
-    cmd=$(
-        echo decrypt
-        echo "$privkey_file"
-
-        symmetric_key_line=$(cat "$encrypted_input_file" | grep -E '^symmetric_key=')
-        echo "${symmetric_key_line#*=}"
-
-        payload_line=$(cat "$encrypted_input_file" | grep -E '^payload=')
-        echo "${payload_line#*=}"
-    )
-    if [[ $(echo "$cmd" | wc -l) -ne 4 ]]; then
-        echo_error "Encrypted data not in expected format"
-        exit 4
-    fi
-    (
-        IFS=$'\n'
-        $cmd
-    )
-}
-
-###############################################
-
 generate_keypair() {
     filename=$1
 
