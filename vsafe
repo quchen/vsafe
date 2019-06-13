@@ -54,9 +54,11 @@ encrypt() {
 # Dead simple encrypted file
 # ==========================
 #
-# This file contains an encrypted file. You can decode it by simply saving the
+# This file contains encrypted data. You can decode it by simply saving the
 # whole text you’re reading right now to a file and running it:
 #
+#     <this> private.key
+#     -- or if it’s an encrypted file:
 #     <this> private.key > decrypted-file
 #
 # Alternatively, you may review the steps taken below, and decode it manually.
@@ -67,8 +69,13 @@ symmetric_key=$encrypted_symmetric_key_base64
 payload=$encrypted_payload_base64
 privkey_file=\${1:?First parameter expected: private key file}
 
-openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode) | \\
-openssl aes-256-cbc -d -in <(echo "\$payload" | base64 --decode) -pass stdin
+{
+    # Decrypt RSA-encrypted AES key
+    openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode)
+} | {
+    # Decrypt payload
+    openssl aes-256-cbc -d -in <(echo "\$payload" | base64 --decode) -pass stdin
+}
 EOF
 }
 
