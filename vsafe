@@ -34,8 +34,8 @@ encrypt_payload_base64() {
 }
 
 encrypt_symmetric_key_base64() {
-    recipients_ssh_pubkey_file=$1
-    symmetric_key=$2
+    symmetric_key=$1
+    recipients_ssh_pubkey_file=$2
 
     openssl rsautl -encrypt -oaep -pubin -inkey <(ssh-keygen -e -f "$recipients_ssh_pubkey_file" -m PKCS8) -in <(echo "$symmetric_key") | base64 -w0
 }
@@ -46,7 +46,7 @@ encrypt() {
 
     symmetric_key=$(generate_random_symmetric_key_base64)
     encrypted_payload_base64=$(encrypt_payload_base64 "$symmetric_key" "$input_file")
-    encrypted_symmetric_key_base64=$(encrypt_symmetric_key_base64 "$pubkey_file" "$symmetric_key")
+    encrypted_symmetric_key_base64=$(encrypt_symmetric_key_base64 "$symmetric_key" "$pubkey_file")
 
     echo "# Dead simple asymmetric encryption file"
     echo ""
