@@ -163,9 +163,8 @@ cat <<EOF
 vsafe - Very Simple Asymmetric File Exchange
 ============================================
 
-+----------+
-| Workflow |
-+----------+
+Workflow
+--------
 
 $alice wants to send $bob a file.
 
@@ -185,9 +184,8 @@ $alice wants to send $bob a file.
      $(emphasis Console:) chmod +x encrypted.txt
      $(emphasis Console:) ./encrypted.txt bobs-key > alice-secret.txt
 
-+------------------+
-| Command overview |
-+------------------+
+Command overview
+----------------
 
 Usage: $self help
        $self encrypt
