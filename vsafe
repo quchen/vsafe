@@ -11,11 +11,11 @@ echo_error() {
 }
 
 if ! which openssl > /dev/null; then
-    echo_error "openssl not installed!" >&1
+    echo_error "openssl not installed!"
     exit 2
 fi
 if ! which ssh-keygen > /dev/null; then
-    echo_error "ssh-keygen not installed!" >&1
+    echo_error "ssh-keygen not installed!"
     exit 1
 fi
 
