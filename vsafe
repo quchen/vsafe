@@ -65,10 +65,10 @@ set -euo pipefail
 
 symmetric_key=$encrypted_symmetric_key_base64
 payload=$encrypted_payload_base64
-privkey_file=${1:?First parameter expected: private key file}
+privkey_file=\${1:?First parameter expected: private key file}
 
 openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode) | \\
-openssl aes-256-cbc -d -in <(echo "\$payload" | base64 --decode) -pass stdin > decrypted-file
+openssl aes-256-cbc -d -in <(echo "\$payload" | base64 --decode) -pass stdin
 EOF
 }
 
@@ -196,7 +196,8 @@ test_real() (
     {
         echo "  5. Bob decrypts Alice’s data"
         cd "$bob"
-        $self decrypt "bobs-key" "alice-secret.txt.enc" > "alice-secret-at-bob.txt"
+        chmod +x alice-secret.txt.enc
+        ./alice-secret.txt.enc bobs-key > alice-secret-at-bob.txt
         echo "     Contents: $(<alice-secret-at-bob.txt)"
     }
 
@@ -263,8 +264,11 @@ $alice wants to send $bob a file.
 
   4. $alice sends the encrypted file to $bob (encrypted.txt).
 
-  5. $bob decrypts the file using his pubkey.
-     $(emphasis Console:) $self decrypt bobs-key encrypted.txt > alice-secret.txt
+  5. $bob decrypts the file using his pubkey. He can do so by following the
+     instructions contained in the file, or by simply running it as a script,
+     since it is a runnable decryption program.
+     $(emphasis Console:) chmod +x encrypted.txt
+     $(emphasis Console:) ./encrypted.txt bobs-key > alice-secret.txt
 
 +------------------+
 | Command overview |
@@ -272,12 +276,10 @@ $alice wants to send $bob a file.
 
 Usage: $self help
        $self encrypt
-       $self decrypt
        $self keygen
 
 help                   Show this help
 encrypt PUBKEY FILE    Encrypt FILE to stdout using PUBKEY file
-decrypt PRIVKEY FILE   Decrypt FILE to stdout using PRIVKEY file
 keygen FILE            Generate keypair: FILE, FILE.pub
 EOF
 }
@@ -318,26 +320,10 @@ main() {
             encrypt "$pubkey_file" "$encrypted"
             ;;
         decrypt)
-            shift
-            if [ -z ${1+x} ]; then
-                echo_error "Parameters missing: private key file, payload file"
-                exit 9
-            else
-                privkey_file=$1
-            fi
-            shift
-            if [ -z ${1+x} ]; then
-                echo_error "Parameter missing: payload file"
-                exit 10
-            else
-                encrypted=$1
-            fi
-            shift
-            if [[ $# -ne 0 ]]; then
-                echo_error "Superflous parameters: $*"
-                exit 11
-            fi
-            decrypt_file "$privkey_file" "$encrypted"
+            echo_error "There is no decrypting step built into this program,"
+            echo_error "since the resulting encrypted file is self-contained."
+            echo_error "Simply follow the instructions in the encrypted file!"
+            exit 1
             ;;
         keygen)
             shift
