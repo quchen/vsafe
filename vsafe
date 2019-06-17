@@ -202,7 +202,7 @@ main() {
     if [ -z ${1+x} ]; then
         echo_error "First parameter missing: mode of operation"
         help
-        exit 5
+        exit 2
     fi
     for arg in "$@"; do
         if [[ $arg == "-h" ]] || [[ $arg == "--help" ]]; then
@@ -215,21 +215,21 @@ main() {
             shift
             if [ -z ${1+x} ]; then
                 echo_error "Parameters missing: public key file, payload file"
-                exit 6
+                exit 3
             else
                 pubkey_file=$1
             fi
             shift
             if [ -z ${1+x} ]; then
                 echo_error "Parameter missing: payload file"
-                exit 7
+                exit 4
             else
                 encrypted=$1
             fi
             shift
             if [[ $# -ne 0 ]]; then
                 echo_error "Superflous parameters: $*"
-                exit 8
+                exit 5
             fi
             encrypt "$pubkey_file" "$encrypted"
             ;;
@@ -237,20 +237,20 @@ main() {
             echo_error "There is no decrypting step built into this program,"
             echo_error "since the resulting encrypted file is self-contained."
             echo_error "Simply follow the instructions in the encrypted file!"
-            exit 1
+            exit 6
             ;;
         keygen)
             shift
             if [ -z ${1+x} ]; then
                 echo_error "Parameter missing: filename of the generated key"
-                exit 12
+                exit 7
             else
                 filename=$1
             fi
             shift
             if [[ $# -ne 0 ]]; then
                 echo_error "Superflous parameters: $*"
-                exit 13
+                exit 8
             fi
             generate_keypair "$filename"
             ;;
@@ -266,7 +266,7 @@ main() {
         *)
             echo_error "Unrecognized operations mode: $1"
             help
-            exit 14
+            exit 9
             ;;
     esac
 }
