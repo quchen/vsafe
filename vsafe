@@ -10,14 +10,15 @@ echo_error() {
     echo "ERROR: $*" >&2
 }
 
-if ! which openssl > /dev/null; then
-    echo_error "openssl not installed!"
-    exit 2
-fi
-if ! which ssh-keygen > /dev/null; then
-    echo_error "ssh-keygen not installed!"
-    exit 1
-fi
+assert_program_exists() {
+    if ! command -v "$1"; then
+        echo_error "$1 not installed"
+        abort=true
+    fi > /dev/null
+}
+assert_program_exists openssl
+assert_program_exists ssh-keygen
+${abort:-false} && exit  1 || unset abort
 
 generate_random_symmetric_key_base64() {
     key_length_bytes=32
