@@ -53,8 +53,8 @@ encrypt() {
 # Dead simple encrypted file
 # ==========================
 #
-# This file contains encrypted data. You can decode it by simply saving the
-# whole text you’re reading right now to a file and running it:
+# You’ve been given encrypted data. You can decode it by simply saving the whole
+# text you’re reading right now to a file and running it:
 #
 #     <this> private.key
 #     -- or if it’s an encrypted file:
@@ -75,13 +75,13 @@ decrypt() {
     }
 }
 
-symmetric_key=\$(cat <<SYMMETRIC_KEY_BASE64
+symmetric_key=\$(cat <<SYMMETRIC_KEY_RSA_BASE64
 $encrypted_symmetric_key_base64
-SYMMETRIC_KEY_BASE64
+SYMMETRIC_KEY_RSA_BASE64
 )
-payload=\$(cat <<PAYLOAD_BASE64
+payload=\$(cat <<PAYLOAD_AES_BASE64
 $encrypted_payload_base64
-PAYLOAD_BASE64
+PAYLOAD_AES_BASE64
 )
 privkey_file=\${1:?First parameter expected: private key file}
 decrypt "\$privkey_file"
