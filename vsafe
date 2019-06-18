@@ -29,14 +29,14 @@ encrypt_payload_base64() {
     pass=$1
     input_file=$2
 
-    echo "$pass" | openssl aes-256-cbc -in "$input_file" -pass stdin | base64 -w0
+    echo "$pass" | openssl aes-256-cbc -in "$input_file" -pass stdin | base64
 }
 
 encrypt_symmetric_key_base64() {
     symmetric_key=$1
     recipients_ssh_pubkey_file=$2
 
-    openssl rsautl -encrypt -oaep -pubin -inkey <(ssh-keygen -e -f "$recipients_ssh_pubkey_file" -m PKCS8) -in <(echo "$symmetric_key") | base64 -w0
+    openssl rsautl -encrypt -oaep -pubin -inkey <(ssh-keygen -e -f "$recipients_ssh_pubkey_file" -m PKCS8) -in <(echo "$symmetric_key") | base64
 }
 
 encrypt() {
@@ -64,17 +64,27 @@ encrypt() {
 
 set -euo pipefail
 
-symmetric_key=$encrypted_symmetric_key_base64
-payload=$encrypted_payload_base64
-privkey_file=\${1:?First parameter expected: private key file}
-
-{
-    # Decrypt RSA-encrypted AES key
-    openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode)
-} | {
-    # Decrypt payload
-    openssl aes-256-cbc -d -in <(echo "\$payload" | base64 --decode) -pass stdin
+decrypt() {
+    local privkey_file="\$1"
+    {
+        # Decrypt RSA-encrypted AES key
+        openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode)
+    } | {
+        # Decrypt payload
+        openssl aes-256-cbc -d -in <(echo "\$payload" | base64 --decode) -pass stdin
+    }
 }
+
+symmetric_key=\$(cat <<SYMMETRIC_KEY_BASE64
+$encrypted_symmetric_key_base64
+SYMMETRIC_KEY_BASE64
+)
+payload=\$(cat <<PAYLOAD_BASE64
+$encrypted_payload_base64
+PAYLOAD_BASE64
+)
+privkey_file=\${1:?First parameter expected: private key file}
+decrypt "\$privkey_file"
 EOF
 }
 
