@@ -90,7 +90,7 @@ generate_keypair() {
 
 test() (
     echo "Alice sends Bob a file"
-    self=$(readlink -f "$0")
+    self=$(cd "$(dirname "$0")" && echo "$(pwd)/$(basename "$0")") # Mac-compatible readlink-f substitute
 
     workbench=$(mktemp --directory /dev/shm/vsafe-test_XXXXX)
     trap "rm -rf '$workbench'" EXIT
