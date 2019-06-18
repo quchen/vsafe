@@ -93,12 +93,13 @@ test() (
     self=$(cd "$(dirname "$0")" && echo "$(pwd)/$(basename "$0")") # Mac-compatible readlink-f substitute
 
     workbench=$(mktemp -d vsafe-test_XXXXX)
+    workbench=$(cd "$workbench" && pwd)
     trap "rm -rf '$workbench'" EXIT
 
-    mkdir "$workbench/alice"
+    mkdir -p "$workbench/alice"
     alice="$workbench/alice"
 
-    mkdir "$workbench/bob"
+    mkdir -p "$workbench/bob"
     bob="$workbench/bob"
 
     {
