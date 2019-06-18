@@ -92,7 +92,7 @@ test() (
     echo "Alice sends Bob a file"
     self=$(cd "$(dirname "$0")" && echo "$(pwd)/$(basename "$0")") # Mac-compatible readlink-f substitute
 
-    workbench=$(mktemp --directory /dev/shm/vsafe-test_XXXXX)
+    workbench=$(mktemp -d vsafe-test_XXXXX)
     trap "rm -rf '$workbench'" EXIT
 
     mkdir "$workbench/alice"
