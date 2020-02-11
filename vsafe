@@ -62,10 +62,9 @@ encrypt() {
 #
 # Alternatively, you may review the steps taken below, and decode it manually.
 
-set -euo pipefail
+set -eufo pipefail
 
 decrypt() {
-    local privkey_file="\$1"
     {
         echo 'Decrypt RSA-encrypted AES key' 1>&2
         openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode)
@@ -84,7 +83,7 @@ $encrypted_payload_base64
 PAYLOAD_AES_BASE64
 )
 privkey_file=\${1:?First parameter expected: private key file}
-decrypt "\$privkey_file"
+decrypt
 EOF
 }
 
