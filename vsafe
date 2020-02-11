@@ -109,7 +109,7 @@ generate_keypair() {
     echo_notice "Send the .pub to the other person and let them encrypt the"
     echo_notice "secret using"
     echo_notice ""
-    echo_notice "    vsafe encrypt ${filename@Q}.pub source_file > source_file.encrypted"
+    echo_notice "    vsafe encrypt $filename.pub source_file > source_file.encrypted"
 }
 
 test() (
