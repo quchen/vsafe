@@ -4,10 +4,14 @@
 #
 # Inspired by this blog post: https://bjornjohansen.no/encrypt-file-using-ssh-key
 
-set -euo pipefail
+set -eufo pipefail
 
 echo_error() {
     echo "ERROR: $*" >&2
+}
+
+echo_notice() {
+    echo "$*" >&2
 }
 
 assert_program_exists() {
@@ -18,7 +22,7 @@ assert_program_exists() {
 }
 assert_program_exists openssl
 assert_program_exists ssh-keygen
-${abort:-false} && exit  1 || unset abort
+${abort:-false} && exit 1 || unset abort
 
 generate_random_symmetric_key_base64() {
     key_length_bytes=32
@@ -53,37 +57,41 @@ encrypt() {
 # Dead simple encrypted file
 # ==========================
 #
-# You’ve been given encrypted data. You can decode it by simply saving the whole
-# text you’re reading right now to a file and running it:
+# You’ve been given encrypted data. You can decode it to STDOUT by simply
+# running the text file you’re reading right now:
 #
-#     <this> private.key
+#     bash <this> private.key
 #     -- or if it’s an encrypted file:
-#     <this> private.key > decrypted-file
+#     bash <this> private.key > decrypted-file
 #
 # Alternatively, you may review the steps taken below, and decode it manually.
 
 set -eufo pipefail
 
-decrypt() {
-    {
-        echo 'Decrypt RSA-encrypted AES key' 1>&2
-        openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode)
-    } | {
-        echo 'Decrypt payload' 1>&2
-        openssl aes-256-cbc -d -salt -pbkdf2 -in <(echo "\$payload" | base64 --decode) -pass stdin
-    }
-}
+if ! which openssl >/dev/null; then
+    echo "openssl not installed" >&2
+    exit 1
+fi
 
 symmetric_key=\$(cat <<SYMMETRIC_KEY_RSA_BASE64
 $encrypted_symmetric_key_base64
 SYMMETRIC_KEY_RSA_BASE64
 )
+
 payload=\$(cat <<PAYLOAD_AES_BASE64
 $encrypted_payload_base64
 PAYLOAD_AES_BASE64
 )
+
 privkey_file=\${1:?First parameter expected: private key file}
-decrypt
+
+{
+    echo 'Decrypt RSA-encrypted AES key' >&2
+    openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode)
+} | {
+    echo 'Decrypt payload' >&2
+    openssl aes-256-cbc -d -salt -pbkdf2 -in <(echo "\$payload" | base64 --decode) -pass stdin
+}
 EOF
 }
 
@@ -96,10 +104,16 @@ generate_keypair() {
     # -f …: Generate …{,.pub}
     ssh-keygen -t rsa -f "$filename" -q -N ""
     mv "$filename" "$filename.PRIVATE"
+    echo_notice "Keypair generated: $filename.PRIVATE, $filename.pub"
+    echo_notice ""
+    echo_notice "Send the .pub to the other person and let them encrypt the"
+    echo_notice "secret using"
+    echo_notice ""
+    echo_notice "    vsafe encrypt ${filename@Q}.pub source_file > source_file.encrypted"
 }
 
 test() (
-    echo "Alice sends Bob a file"
+    echo "Test case: Alice sends Bob a file"
 
     self="$(
         readlink -f "$0" \
@@ -118,7 +132,7 @@ test() (
 
     echo "  1. Bob generates key"
     cd "$bob"
-    $self keygen "bobs-key"
+    $self keygen "bobs-key" 2>/dev/null
 
     echo "  2. Bob sends pubkey to Alice"
     cd "$bob"
@@ -137,7 +151,7 @@ test() (
     echo "  5. Bob decrypts Alice’s data"
     cd "$bob"
     chmod +x alice-secret.txt.enc
-    ./alice-secret.txt.enc bobs-key 2>/dev/null > alice-secret-at-bob.txt
+    ./alice-secret.txt.enc "bobs-key.PRIVATE" 2>/dev/null > "alice-secret-at-bob.txt"
     echo "     Contents: $(<alice-secret-at-bob.txt)"
 
     if diff "$alice/alice-secret.txt" "$bob/alice-secret-at-bob.txt" > /dev/null; then
@@ -193,7 +207,7 @@ Command overview
 
 Usage: $self help                  Show this help
        $self encrypt PUBKEY FILE   Encrypt FILE to stdout using PUBKEY file
-       $self keygen                FILE Generate keypair: FILE, FILE.pub
+       $self keygen [FILE=key]     FILE Generate keypair: FILE.PUBLIC, FILE.pub
        $self test                  Run roundtrip test
 EOF
 }
@@ -242,12 +256,13 @@ main() {
         keygen)
             shift
             if [ -z ${1+x} ]; then
-                echo_error "Parameter missing: filename of the generated key"
-                exit 7
+                local default=key
+                echo_notice "No keyfile name specified; defaulting to \"$default\""
+                filename=$default
             else
                 filename=$1
+                shift
             fi
-            shift
             if [[ $# -ne 0 ]]; then
                 echo_error "Superflous parameters: $*"
                 exit 8
