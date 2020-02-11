@@ -115,6 +115,8 @@ generate_keypair() {
 test() (
     echo "Test case: Alice sends Bob a file"
 
+    set -x
+
     self="$(
         readlink -f "$0" \
             || $(cd "$(dirname "$0")" && echo "$(pwd)/$(basename "$0")") # Mac-compatible readlink-f substitute
@@ -132,7 +134,7 @@ test() (
 
     echo "  1. Bob generates key"
     cd "$bob"
-    $self keygen "bobs-key" 2>/dev/null
+    $self keygen "bobs-key"
 
     echo "  2. Bob sends pubkey to Alice"
     cd "$bob"
@@ -151,7 +153,7 @@ test() (
     echo "  5. Bob decrypts Alice’s data"
     cd "$bob"
     chmod +x alice-secret.txt.enc
-    ./alice-secret.txt.enc "bobs-key.PRIVATE" 2>/dev/null > "alice-secret-at-bob.txt"
+    ./alice-secret.txt.enc "bobs-key.PRIVATE"  > "alice-secret-at-bob.txt"
     echo "     Contents: $(<alice-secret-at-bob.txt)"
 
     if diff "$alice/alice-secret.txt" "$bob/alice-secret-at-bob.txt" > /dev/null; then
