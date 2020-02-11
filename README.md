@@ -35,3 +35,4 @@ Command overview
   - vsafe help
   - `vsafe encrypt PUBKEY FILE` – Encrypt FILE to stdout using PUBKEY file
   - `vsafe keygen FILE` – Generate keypair: FILE, FILE.pub
+  - `vsafe test` – Run the roundtrip test

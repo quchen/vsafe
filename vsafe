@@ -199,13 +199,10 @@ $alice wants to send $bob a file.
 Command overview
 ----------------
 
-Usage: $self help
-       $self encrypt
-       $self keygen
-
-help                   Show this help
-encrypt PUBKEY FILE    Encrypt FILE to stdout using PUBKEY file
-keygen FILE            Generate keypair: FILE, FILE.pub
+Usage: $self help                  Show this help
+       $self encrypt PUBKEY FILE   Encrypt FILE to stdout using PUBKEY file
+       $self keygen                FILE Generate keypair: FILE, FILE.pub
+       $self test                  Run roundtrip test
 EOF
 }
 
