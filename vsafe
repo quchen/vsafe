@@ -95,6 +95,7 @@ generate_keypair() {
     # -t rsa: RSA key
     # -f …: Generate …{,.pub}
     ssh-keygen -t rsa -f "$filename" -q -N ""
+    mv "$filename" "$filename.PRIVATE"
 }
 
 test() (
