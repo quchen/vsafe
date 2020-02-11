@@ -67,10 +67,10 @@ set -euo pipefail
 decrypt() {
     local privkey_file="\$1"
     {
-        # Decrypt RSA-encrypted AES key
+        echo 'Decrypt RSA-encrypted AES key' 1>&2
         openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode)
     } | {
-        # Decrypt payload
+        echo 'Decrypt payload' 1>&2
         openssl aes-256-cbc -d -salt -pbkdf2 -in <(echo "\$payload" | base64 --decode) -pass stdin
     }
 }
@@ -142,7 +142,7 @@ test() (
         echo "  5. Bob decrypts Alice’s data"
         cd "$bob"
         chmod +x alice-secret.txt.enc
-        ./alice-secret.txt.enc bobs-key > alice-secret-at-bob.txt
+        ./alice-secret.txt.enc bobs-key 2>/dev/null > alice-secret-at-bob.txt
         echo "     Contents: $(<alice-secret-at-bob.txt)"
     }
 
