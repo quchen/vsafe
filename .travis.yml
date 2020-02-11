@@ -17,5 +17,7 @@ before_install:
         brew install openssl
     fi
 
+  - openssl version
+
 script:
     - ./vsafe test

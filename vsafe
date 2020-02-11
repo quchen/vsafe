@@ -33,7 +33,7 @@ encrypt_payload_base64() {
     pass=$1
     input_file=$2
 
-    echo "$pass" | openssl aes-256-cbc -salt -iter -in "$input_file" -pass stdin | base64
+    echo "$pass" | openssl aes-256-cbc -salt -pbkdf2 -in "$input_file" -pass stdin | base64
 }
 
 encrypt_symmetric_key_base64() {
@@ -90,7 +90,7 @@ privkey_file=\${1:?First parameter expected: private key file}
     openssl rsautl -decrypt -oaep -inkey "\$privkey_file" -in <(echo "\$symmetric_key" | base64 --decode)
 } | {
     echo 'Decrypt payload' >&2
-    openssl aes-256-cbc -d -salt -iter -in <(echo "\$payload" | base64 --decode) -pass stdin
+    openssl aes-256-cbc -d -salt -pbkdf2 -in <(echo "\$payload" | base64 --decode) -pass stdin
 }
 EOF
 }
