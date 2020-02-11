@@ -1,6 +1,8 @@
 vsafe - Very Simple Asymmetric File Exchange
 ============================================
 
+![](https://travis-ci.org/quchen/vsafe.svg?branch=master)
+
 Workflow
 --------
 

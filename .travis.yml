@@ -17,4 +17,4 @@ before_install:
     fi
 
 script:
-    - vsafe test
+    - ./vsafe test
