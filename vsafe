@@ -111,47 +111,35 @@ test() (
     mkdir -p "$workbench/bob"
     bob="$workbench/bob"
 
-    {
-        echo "  1. Bob generates key"
-        cd "$bob"
-        $self keygen "bobs-key"
-    }
+    echo "  1. Bob generates key"
+    cd "$bob"
+    $self keygen "bobs-key"
 
-    {
-        echo "  2. Bob sends pubkey to Alice"
-        cd "$bob"
-        cp "bobs-key.pub" "$alice/"
-    }
+    echo "  2. Bob sends pubkey to Alice"
+    cd "$bob"
+    cp "bobs-key.pub" "$alice/"
 
-    {
-        echo "  3. Alice encrypts her file"
-        cd "$alice"
-        openssl rand -base64 20 > "alice-secret.txt"
-        echo "     Contents: $(<alice-secret.txt)"
-        $self encrypt "bobs-key.pub" "alice-secret.txt" > "alice-secret.txt.enc"
-    }
+    echo "  3. Alice encrypts her file"
+    cd "$alice"
+    openssl rand -base64 20 > "alice-secret.txt"
+    echo "     Contents: $(<alice-secret.txt)"
+    $self encrypt "bobs-key.pub" "alice-secret.txt" > "alice-secret.txt.enc"
 
-    {
-        echo "  4. Alice sends encrypted file to Bob"
-        cd "$alice"
-        cp "alice-secret.txt.enc" "$bob/"
-    }
+    echo "  4. Alice sends encrypted file to Bob"
+    cd "$alice"
+    cp "alice-secret.txt.enc" "$bob/"
 
-    {
-        echo "  5. Bob decrypts Alice’s data"
-        cd "$bob"
-        chmod +x alice-secret.txt.enc
-        ./alice-secret.txt.enc bobs-key 2>/dev/null > alice-secret-at-bob.txt
-        echo "     Contents: $(<alice-secret-at-bob.txt)"
-    }
+    echo "  5. Bob decrypts Alice’s data"
+    cd "$bob"
+    chmod +x alice-secret.txt.enc
+    ./alice-secret.txt.enc bobs-key 2>/dev/null > alice-secret-at-bob.txt
+    echo "     Contents: $(<alice-secret-at-bob.txt)"
 
-    {
-        if diff "$alice/alice-secret.txt" "$bob/alice-secret-at-bob.txt" > /dev/null; then
-            echo "  6. Data retrieved successfully :-)"
-        else
-            echo "  6. Oh no, test failed :-("
-        fi
-    }
+    if diff "$alice/alice-secret.txt" "$bob/alice-secret-at-bob.txt" > /dev/null; then
+        echo "  6. Data retrieved successfully :-)"
+    else
+        echo "  6. Oh no, test failed :-("
+    fi
 )
 
 emphasis() {
